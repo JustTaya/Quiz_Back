@@ -1,6 +1,8 @@
 package com.quiz.config;
 
 import com.quiz.security.AuthFilter;
+import com.quiz.security.QuizUserDetailsService;
+import com.quiz.security.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,9 +19,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
+    private final QuizUserDetailsService userDetailsService;
+    private final TokenProvider tokenProvider;
+
     @Bean
     public AuthFilter authFilter(){
-        return new AuthFilter();
+        return new AuthFilter(userDetailsService, tokenProvider);
     }
 
     @Bean
@@ -32,7 +37,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.csrf().disable();
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         http.authorizeRequests()
-                .antMatchers("/auth/**").permitAll()
+                .antMatchers("/auth/**", "/profile/**").permitAll()
                 .antMatchers("/api/**").authenticated();
         http.addFilterBefore(authFilter(), UsernamePasswordAuthenticationFilter.class);
     }

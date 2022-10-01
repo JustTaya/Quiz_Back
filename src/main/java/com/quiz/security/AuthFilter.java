@@ -1,5 +1,6 @@
 package com.quiz.security;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -16,12 +17,11 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Slf4j
+@RequiredArgsConstructor
 public class AuthFilter extends OncePerRequestFilter {
 
-    @Autowired
-    private QuizUserDetailsService userDetailsService;
-    @Autowired
-    private TokenProvider tokenProvider;
+    private final QuizUserDetailsService userDetailsService;
+    private final TokenProvider tokenProvider;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {

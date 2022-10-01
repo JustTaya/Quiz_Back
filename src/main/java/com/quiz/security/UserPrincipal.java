@@ -11,11 +11,11 @@ import java.util.Collections;
 
 public class UserPrincipal implements UserDetails {
 
-    private int id;
+    private final int id;
 
-    private String password;
+    private final String password;
 
-    private String email;
+    private final String email;
 
     public UserPrincipal(User user) {
         id = user.getId();
@@ -25,7 +25,7 @@ public class UserPrincipal implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"));// TODO: 10.04.2020 create const
+        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"));
     }
 
     @Override
