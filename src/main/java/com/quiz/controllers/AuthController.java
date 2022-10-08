@@ -1,9 +1,9 @@
 package com.quiz.controllers;
 
-import com.quiz.entities.ResponseToken;
-import com.quiz.service.AuthService;
 import com.quiz.dto.UserDto;
+import com.quiz.entities.ResponseToken;
 import com.quiz.entities.User;
+import com.quiz.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
