@@ -30,7 +30,7 @@ public class SharingQuizController {
     }
 
     @GetMapping("/categories/{categoryId}")
-    public ResponseEntity<List<Quiz>> getQuizzesByGategory(@PathVariable int categoryId) {
+    public ResponseEntity<List<Quiz>> getQuizzesByCategory(@PathVariable int categoryId) {
         return ResponseEntity.ok(quizService.findQuizzesByCategory(categoryId));
     }
 

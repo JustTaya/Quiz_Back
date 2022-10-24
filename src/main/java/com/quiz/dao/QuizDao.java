@@ -7,13 +7,14 @@ import com.quiz.exceptions.DatabaseException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
+import java.sql.PreparedStatement;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 
 import static com.quiz.dao.mapper.QuizMapper.*;
 
@@ -23,33 +24,33 @@ public class QuizDao {
 
     private final JdbcTemplate jdbcTemplate;
 
-    private static final String GET_QUIZZES_BY_STATUS = "SELECT * FROM quizzes WHERE status = ?";
-    private static final String GET_ALL_QUIZZES = "SELECT * FROM quizzes";
-    private static final String GET_QUIZ_BY_ID = "SELECT * FROM quizzes WHERE id = ?";
-    private static final String GET_QUIZZES_CREATED_BY_USER_ID = "SELECT * FROM quizzes WHERE author = ?";
-    private static final String GET_FAVORITE_QUIZZES_BY_USER_ID = "SELECT * FROM quizzes INNER JOIN favorite_quizzes ON id = quiz_id WHERE user_id = ?";
-    private static final String GET_QUIZZES_BY_CATEGORY_ID = "SELECT * FROM quizzes WHERE category_id = ?";
-    private static final String GET_QUIZZES_BY_TAG = "SELECT * FROM quizzes INNER JOIN quizzes_tags on id = quiz_id where tag_id = ?";
-    private static final String GET_QUIZZES_BY_NAME = "SELECT * FROM quizzes WHERE name LIKE ?";
-    private static final String INSERT_QUIZ = "INSERT INTO quizzes (id, name, author, category_id, date, description, status, modification_time) VALUES (?,?,?,?,?,?,?,?)";
-    private static final String UPDATE_QUIZ = "UPDATE quizzes SET name = ?, author = ?, category_id = ?, date = ?, description = ?, status = ?, modification_time = ? WHERE id = ?";
+    private final static String GET_QUIZZES_BY_STATUS = "SELECT * FROM quizzes WHERE status = ?::status_type";
+    private final static String GET_ALL_QUIZZES = "SELECT * FROM quizzes";
+    private final static String GET_QUIZ_BY_ID = "SELECT * FROM quizzes WHERE id = ?";
+    private final static String GET_QUIZZES_CREATED_BY_USER_ID = "SELECT * FROM quizzes WHERE author = ?";
+    private final static String GET_FAVORITE_QUIZZES_BY_USER_ID = "SELECT * FROM quizzes INNER JOIN favorite_quizzes ON id = quiz_id WHERE user_id = ?";
+    private final static String GET_QUIZZES_BY_CATEGORY_ID = "SELECT * FROM quizzes WHERE category_id = ?";
+    private final static String GET_QUIZZES_BY_TAG = "SELECT * FROM quizzes INNER JOIN quizzes_tags on id = quiz_id where tag_id = ?";
+    private final static String GET_QUIZZES_BY_NAME = "SELECT * FROM quizzes WHERE name LIKE ?";
+    private final static String INSERT_QUIZ = "INSERT INTO quizzes (name , author, category_id, date, description,status, modification_time) VALUES (?,?,?,?,?,?::status_type,?)";
+    private final static String UPDATE_QUIZ = "UPDATE quizzes SET name = ?, author = ?, category_id = ?, date = ?, description = ?, status = ?::status_type, modification_time = ? WHERE id = ?";
     public static final String TABLE_QUIZZES = "quizzes";
 
     public List<Quiz> getQuizzesByStatus(StatusType status) {
 
         List<Quiz> quizzesByStatus = jdbcTemplate.query(GET_QUIZZES_BY_STATUS, new Object[]{status}, new QuizMapper());
 
-        if (quizzesByStatus.isEmpty()){
+        if (quizzesByStatus.isEmpty()) {
             return null;
         }
 
         return quizzesByStatus;
     }
 
-    public List<Quiz> getAllQuizzes(){
+    public List<Quiz> getAllQuizzes() {
         List<Quiz> quizzes = jdbcTemplate.query(GET_ALL_QUIZZES, new QuizMapper());
 
-        if (quizzes.isEmpty()){
+        if (quizzes.isEmpty()) {
             return null;
         }
 
@@ -90,7 +91,7 @@ public class QuizDao {
 
         List<Quiz> quizzesCreatedByUser = jdbcTemplate.query(GET_QUIZZES_CREATED_BY_USER_ID, new Object[]{userId}, new QuizMapper());
 
-        if (quizzesCreatedByUser.isEmpty()){
+        if (quizzesCreatedByUser.isEmpty()) {
             return null;
         }
 
@@ -99,9 +100,9 @@ public class QuizDao {
 
     public List<Quiz> findQuizzesByName(String name) {
 
-        List<Quiz> quizzesByName = jdbcTemplate.query(GET_QUIZZES_BY_NAME, new Object[]{"%"+name+"%"}, new QuizMapper());
+        List<Quiz> quizzesByName = jdbcTemplate.query(GET_QUIZZES_BY_NAME, new Object[]{"%" + name + "%"}, new QuizMapper());
 
-        if (quizzesByName.isEmpty()){
+        if (quizzesByName.isEmpty()) {
             return null;
         }
 
@@ -111,7 +112,7 @@ public class QuizDao {
     public List<Quiz> getFavoriteQuizzesByUserId(int userId) {
         List<Quiz> quizzesFavoriteByUser = jdbcTemplate.query(GET_FAVORITE_QUIZZES_BY_USER_ID, new Object[]{userId}, new QuizMapper());
 
-        if (quizzesFavoriteByUser.isEmpty()){
+        if (quizzesFavoriteByUser.isEmpty()) {
             return null;
         }
 
@@ -122,7 +123,7 @@ public class QuizDao {
 
         List<Quiz> quizzesByCategory = jdbcTemplate.query(GET_QUIZZES_BY_CATEGORY_ID, new Object[]{categoryId}, new QuizMapper());
 
-        if (quizzesByCategory.isEmpty()){
+        if (quizzesByCategory.isEmpty()) {
             return null;
         }
 
@@ -133,7 +134,7 @@ public class QuizDao {
 
         List<Quiz> quizzesByTag = jdbcTemplate.query(GET_QUIZZES_BY_TAG, new Object[]{tagId}, new QuizMapper());
 
-        if (quizzesByTag.isEmpty()){
+        if (quizzesByTag.isEmpty()) {
             return null;
         }
 
@@ -142,30 +143,27 @@ public class QuizDao {
 
     @Transactional
     public Quiz insert(Quiz entity) {
-        int id;
-
-        SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate.getDataSource())
-                .withTableName(TABLE_QUIZZES)
-                .usingGeneratedKeyColumns(QuizMapper.QUIZ_ID);
-
-
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put(QuizMapper.QUIZ_ID, entity.getId());
-        parameters.put(QuizMapper.QUIZ_NAME, entity.getName());
-        parameters.put(QuizMapper.QUIZ_AUTHOR, entity.getAuthor());
-        parameters.put(QuizMapper.QUIZ_CATEGORY, entity.getCategory_id());
-        parameters.put(QuizMapper.QUIZ_DATE, entity.getDate());
-        parameters.put(QuizMapper.QUIZ_DESCRIPTION, entity.getDescription());
-        parameters.put(QuizMapper.QUIZ_STATUS, entity.getStatus());
-        parameters.put(QuizMapper.QUIZ_MODIFICATION_TIME, entity.getModificationTime());
-
+        KeyHolder keyHolder = new GeneratedKeyHolder();
 
         try {
-            jdbcTemplate.update(INSERT_QUIZ, entity.getName(), entity.getAuthor(), entity.getCategory_id(), entity.getDate(), entity.getDescription(), entity.getStatus(), entity.getModificationTime());
-            //entity.setId(id);
+            jdbcTemplate.update(connection -> {
+                PreparedStatement ps = connection
+                        .prepareStatement(INSERT_QUIZ, new String[]{"id"});
+                ps.setString(1, entity.getName());
+                ps.setInt(2, entity.getAuthor());
+                ps.setInt(3, entity.getCategory_id());
+                ps.setDate(4, entity.getDate());
+                ps.setString(5, entity.getDescription());
+                ps.setString(6, String.valueOf(entity.getStatus()));
+                ps.setTimestamp(7, entity.getModificationTime());
+                return ps;
+            }, keyHolder);
+
         } catch (DataAccessException e) {
             throw new DatabaseException("Database access exception while quiz insert");
         }
+
+        entity.setId(Objects.requireNonNull(keyHolder.getKey()).intValue());
 
         return entity;
     }

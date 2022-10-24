@@ -11,7 +11,6 @@ import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,13 +23,13 @@ public class UserDao {
 
     private final JdbcTemplate jdbcTemplate;
 
-    private static final String USER_FIND_BY_EMAIL = "SELECT id, email, password FROM users WHERE email = ?";
-    private static final String USER_FIND_BY_ID = "SELECT id,email,password FROM users WHERE id = ?";
-    private static final String USER_GET_ALL_FOR_PROFILE_BY_ID = "SELECT id, name, surname, birthdate, gender, city, about FROM users WHERE id = ?";
-    private static final String FIND_FRIENDS_BY_USER_ID = "SELECT friend_id, name, surname, rating FROM users INNER JOIN friends ON id = user_id WHERE id = ?";
-    private static final String INSERT_USER = "INSERT INTO users (email, password) VALUES (?,?)";
-    private static final String UPDATE_USER = "UPDATE users  SET name = ?, surname = ?, birthdate = ?, gender = ?, city = ?, about = ? WHERE id = ?";
-    private static final String UPDATE_USER_PASSWORD = "UPDATE users SET password = ? WHERE id = ?";
+    private final static String USER_FIND_BY_EMAIL = "SELECT id, email, password FROM users WHERE email = ?";
+    private final static String USER_FIND_BY_ID = "SELECT id,email,password FROM users WHERE id = ?";
+    private final static String USER_GET_ALL_FOR_PROFILE_BY_ID = "SELECT id, name, surname, birthdate, gender, city, about FROM users WHERE id = ?";
+    private final static String FIND_FRIENDS_BY_USER_ID = "SELECT friend_id, name, surname, rating FROM users INNER JOIN friends ON id = user_id WHERE id = ?";
+    private final static String INSERT_USER = "INSERT INTO users (email, password) VALUES (?,?)";
+    private final static String UPDATE_USER = "UPDATE users  SET name = ?, surname = ?, birthdate = ?, gender = ?, city = ?, about = ? WHERE id = ?";
+    private final static String UPDATE_USER_PASSWORD = "UPDATE users SET password = ? WHERE id = ?";
     public static final String TABLE_USERS = "users";
 
     public User findByEmail(String email) {
@@ -101,6 +100,7 @@ public class UserDao {
 
         try {
             jdbcTemplate.update(INSERT_USER, entity.getEmail(), entity.getPassword());
+            //entity.setId(id);
         } catch (DataAccessException e) {
             throw new DatabaseException("Database access exception while user insert");
         }
@@ -143,6 +143,10 @@ public class UserDao {
 
                     return user;
                 });
+
+        if (friends.isEmpty()) {
+            return null;
+        }
 
         return friends;
     }

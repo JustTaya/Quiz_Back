@@ -6,10 +6,14 @@ import com.quiz.exceptions.DatabaseException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.PreparedStatement;
 import java.util.List;
+import java.util.Objects;
 
 import static com.quiz.dao.mapper.QuestionMapper.*;
 
@@ -18,12 +22,12 @@ import static com.quiz.dao.mapper.QuestionMapper.*;
 public class QuestionDao {
     private final JdbcTemplate jdbcTemplate;
 
-    private final static String QUESTION_FIND_BY_ID = "SELECT id, quiz_id, type, text, active FROM questions WHERE id = ?";
-    private final static String QUESTION_FIND_BY_QUIZ_ID = "SELECT id, quiz_id, type, text, active FROM questions WHERE quiz_id = ?";
+    private static final String QUESTION_FIND_BY_ID = "SELECT id, quiz_id, type, text, active FROM questions WHERE id = ?";
+    private static final String QUESTION_FIND_BY_QUIZ_ID = "SELECT id, quiz_id, type, text, active FROM questions WHERE quiz_id = ?";
 
-    private final static String INSERT_QUESTION = "INSERT INTO questions (quiz_id, type, text, active) VALUES ( ?, ?::question_type, ?, ?)";
+    private static final String INSERT_QUESTION = "INSERT INTO questions (quiz_id, type, text, active) VALUES ( ?, ?::question_type, ?, ?)";
 
-    private final static String UPDATE_QUESTION = "UPDATE questions SET type=?, text=?, active=? WHERE id=?";
+    private static final String UPDATE_QUESTION = "UPDATE questions SET type=?, text=?, active=? WHERE id=?";
 
     public static final String TABLE_QUESTIONS = "questions";
 
@@ -31,21 +35,7 @@ public class QuestionDao {
         List<Question> questions;
 
         try {
-            questions = jdbcTemplate.query(
-                    QUESTION_FIND_BY_ID,
-                    new Object[]{id},
-                    (resultSet, i) -> {
-                        Question question = new Question();
-
-                        question.setId(resultSet.getInt(QUESTION_ID));
-                        question.setQuizId(resultSet.getInt(QUESTION_QUIZ_ID));
-                        question.setType(QuestionType.valueOf(resultSet.getString(QUESTION_TYPE)));
-                        question.setText(resultSet.getString(QUESTION_TEXT));
-                        question.setActive(resultSet.getBoolean(QUESTION_ACTIVE));
-
-                        return question;
-                    }
-            );
+            questions = getQuery(QUESTION_FIND_BY_ID, id);
             if (questions.isEmpty()) {
                 return null;
             }
@@ -57,9 +47,9 @@ public class QuestionDao {
         return questions.get(0);
     }
 
-    public List<Question> findQuestionsByQuizId(int id) {
+    private List<Question> getQuery(String sql, int id) {
         return jdbcTemplate.query(
-                QUESTION_FIND_BY_QUIZ_ID,
+                sql,
                 new Object[]{id},
                 (resultSet, i) -> {
                     Question question = new Question();
@@ -71,16 +61,34 @@ public class QuestionDao {
                     question.setActive(resultSet.getBoolean(QUESTION_ACTIVE));
 
                     return question;
-                });
+                }
+        );
+    }
+
+    public List<Question> findQuestionsByQuizId(int id) {
+        return getQuery(QUESTION_FIND_BY_QUIZ_ID, id);
     }
 
     @Transactional
     public Question insert(Question entity) {
+        KeyHolder keyHolder = new GeneratedKeyHolder();
         try {
-            jdbcTemplate.update(INSERT_QUESTION, entity.getQuizId(), String.valueOf(entity.getType()), entity.getText(), entity.isActive());
+            jdbcTemplate.update(connection -> {
+                        PreparedStatement ps = connection
+                                .prepareStatement(INSERT_QUESTION, new String[]{"id"});
+                        ps.setInt(1, entity.getQuizId());
+                        ps.setString(2, String.valueOf(entity.getType()));
+                        ps.setString(3, entity.getText());
+                        ps.setBoolean(4, entity.isActive());
+                        return ps;
+                    },
+                    keyHolder
+            );
         } catch (DataAccessException e) {
             throw new DatabaseException("Database access exception while question insert");
         }
+
+        entity.setId(Objects.requireNonNull(keyHolder.getKey()).intValue());
 
         return entity;
     }
