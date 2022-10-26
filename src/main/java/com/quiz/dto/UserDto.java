@@ -33,5 +33,6 @@ public class UserDto {
     public UserDto(User user) {
         id = user.getId();
         email = user.getEmail();
+        role = user.getRole();
     }
 }

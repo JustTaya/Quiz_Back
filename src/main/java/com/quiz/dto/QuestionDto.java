@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 
 @Data
 @NoArgsConstructor
-@RequiredArgsConstructor
 public class QuestionDto {
     private int id;
     private int quizId;

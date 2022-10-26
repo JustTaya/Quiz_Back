@@ -15,7 +15,7 @@ public class QuizService {
 
     private final QuizDao quizDao;
 
-    public List<Quiz> findQuizzesByStatus(StatusType status){
+    public List<QuizDto> findQuizzesByStatus(StatusType status){
         return quizDao.getQuizzesByStatus(status);
     }
 
@@ -23,7 +23,7 @@ public class QuizService {
         return quizDao.getAllQuizzes();
     }
 
-    public Quiz findQuizById(int id) {
+    public QuizDto findQuizById(int id) {
         return quizDao.findById(id);
     }
 
@@ -55,5 +55,4 @@ public class QuizService {
         quizDao.insert(quiz);
         return new QuizDto(quiz);
     }
-
 }
