@@ -1,12 +1,12 @@
 package com.quiz.service;
 
-import com.quiz.security.TokenProvider;
 import com.quiz.dao.UserDao;
 import com.quiz.dto.UserDto;
 import com.quiz.entities.User;
 import com.quiz.exceptions.EmailExistException;
 import com.quiz.exceptions.NotFoundException;
 import com.quiz.exceptions.PasswordException;
+import com.quiz.security.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -27,6 +27,7 @@ public class AuthService {
         }
         user.setPassword(user.getPassword());
         user.setRole(user.getRole());
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         userDao.insert(user);
         return new UserDto(user);
     }
@@ -36,7 +37,7 @@ public class AuthService {
         if (userdb == null) {
             throw new NotFoundException("user", "email", user.getEmail());
         }
-        if(!user.getPassword().equals(userdb.getPassword())){
+        if(!passwordEncoder.matches(user.getPassword(), userdb.getPassword())){
             throw new PasswordException();
         }
         return tokenProvider.createToken(userdb.getEmail());

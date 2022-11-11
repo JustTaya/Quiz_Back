@@ -4,7 +4,6 @@ import com.quiz.entities.Question;
 import com.quiz.entities.QuestionType;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 
 @Data
 @NoArgsConstructor

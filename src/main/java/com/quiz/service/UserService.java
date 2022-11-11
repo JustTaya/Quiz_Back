@@ -34,8 +34,8 @@ public class UserService {
         return userDao.findProfileInfoByUserId(id);
     }
 
-    public List<User> findFriendByUserId(int id) {
-        return userDao.findFriendByUserId(id);
+    public List<User> findFriendByUserId(int id, String sort) {
+        return userDao.findFriendByUserId(id, sort);
     }
 
 
@@ -46,15 +46,13 @@ public class UserService {
     public boolean updatePasswordById(int id, String newPassword) {
         return userDao.updatePasswordById(id, passwordEncoder.encode(newPassword));
     }
+
     public boolean updateStatusById(int id) {
         return userDao.updateStatusById(id);
     }
 
-    public int getUserIdByEmail(String email){
+    public int getUserIdByEmail(String email) {
         return userDao.getUserIdByEmail(email);
-    }
-    public String getUserRoleByEmail(String email){
-        return userDao.getUserRoleByEmail(email);
     }
 
     public boolean updateProfileImage(MultipartFile image, int userId) {
@@ -69,12 +67,33 @@ public class UserService {
         return userDao.updateNotificationStatus(status, userId);
     }
 
+    public NotificationStatus getNotificationStatus(int userId) {
+        return userDao.getUserNotification(userId);
+    }
+
+    public Integer getRatingByUser(int userId) {
+        return userDao.getRatingByUser(userId);
+    }
+
+    public List<User> getRating(int from, int to) {
+        return userDao.getRating(from, to);
+    }
+
+    public List<User> getRatingInRange(int userId, int range) {
+        return userDao.getRatingInRange(userId, range);
+    }
+
+    public List<User> filterFriendByUserId(String userSearch, int userId, String sort) {
+        return userDao.filterFriendByUserId(userSearch, userId, sort);
+    }
+
+    public String getUserRoleByEmail(String email){
+        return userDao.getUserRoleByEmail(email);
+    }
+
     public List<User> findAdminsUsers() {
         return userDao.findAdminsUsers();
     }
     public void deleteUserById(int id) { userDao.deleteUserById(id); }
 
-    public NotificationStatus getNotificationStatus(int userId) {
-        return userDao.getUserNotification(userId);
-    }
 }

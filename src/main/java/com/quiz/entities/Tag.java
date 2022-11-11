@@ -1,9 +1,11 @@
 package com.quiz.entities;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
-public class Category {
+@NoArgsConstructor
+public class Tag {
     private int id;
     private String name;
 }

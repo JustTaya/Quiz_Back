@@ -36,6 +36,7 @@ public class CategoryDao {
                         return category;
                     });
         } catch (DataAccessException e) {
+            e.printStackTrace();
             throw new DatabaseException(String.format("Find category by id '%s' database error occured", name));
         }
 
