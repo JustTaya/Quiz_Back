@@ -32,36 +32,8 @@ public class QuestionController {
                 .body(question);
     }
 
-    @PostMapping("/new")
-    public ResponseEntity<QuestionDto> insert(@RequestBody Question question) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(questionService.insertQuestion(question));
-    }
-
-    @PostMapping("/update")
-    public ResponseEntity<String> update(@RequestBody Question question) {
-        boolean isRecordAffected = questionService.updateQuestion(question);
-
-        if (isRecordAffected) {
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .build();
-        }
-
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .build();
-    }
-
     @GetMapping("/get_image/{questionId}")
     public ResponseEntity<ResponseText> getQuestionImage(@PathVariable int questionId) {
         return ResponseEntity.ok(new ResponseText(new String(Base64.getEncoder().encode(questionService.getQuestionByQuestionId(questionId)))));
-    }
-
-    @PostMapping("/new_image/{questionId}")
-    public ResponseEntity<String> changeQuestionImage(@RequestParam(value = "image") MultipartFile image, @PathVariable int questionId) {
-        boolean isRecordAffected = questionService.updateImageByQuestionId(image, questionId);
-        if (isRecordAffected) {
-            return ResponseEntity.status(HttpStatus.CREATED).build();
-        }
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
 }

@@ -3,11 +3,11 @@ package com.quiz.service;
 import com.quiz.dao.QuizDao;
 import com.quiz.dto.QuizDto;
 import com.quiz.entities.Quiz;
+import com.quiz.entities.RejectMessage;
 import com.quiz.entities.StatusType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -20,24 +20,35 @@ public class QuizService {
     public List<QuizDto> findQuizzesByStatus(StatusType status) {
         return quizDao.getQuizzesByStatus(status);
     }
-
-    public List<Quiz> findAllQuizzes(int userId) {
-        return quizDao.getAllQuizzes(userId);
+    public List<QuizDto> getModeratorQuizzes(int moderatorId) {
+        return quizDao.getModeratorQuizzes(moderatorId);
     }
 
-    public QuizDto findQuizById(int id) {
+    public List<QuizDto> findAllQuizzes(int pageSize, int pageNumber, int userId) {
+        return quizDao.getAllQuizzes(pageSize, pageNumber, userId);
+    }
+
+    public QuizDto findQuizInfoById(int id) {
+        return quizDao.findInfoById(id);
+    }
+
+    public Quiz findQuizById(int id) {
         return quizDao.findById(id);
+    }
+
+    public QuizDto getQuizInfo(int id){
+        return quizDao.getQuizInfo(id);
     }
 
     public List<Quiz> findQuizzesCreatedByUserId(int userId, String sort) {
         return quizDao.getQuizzesCreatedByUser(userId, sort);
     }
 
-    public List<Quiz> findFavoriteQuizzes(int userId) {
+    public List<QuizDto> findFavoriteQuizzes(int userId) {
         return quizDao.getFavoriteQuizzesByUserId(userId);
     }
 
-    public List<Quiz> findQuizzesByCategory(int categoryId, int userId) {
+    public List<QuizDto> findQuizzesByCategory(int categoryId, int userId) {
         return quizDao.getQuizzesByCategory(categoryId, userId);
     }
 
@@ -49,27 +60,19 @@ public class QuizService {
         return quizDao.findQuizzesByName(name);
     }
 
-    public byte[] getImageByQuizId(int quizId) {
+    public String getImageByQuizId(int quizId) {
         return quizDao.getQuizImageByQuizId(quizId);
     }
 
-    public boolean updateQuiz(Quiz quiz) {
-        return quizDao.updateQuiz(quiz);
-    }
-
-    public boolean updateQuizImage(MultipartFile image, int quizId) {
-        return quizDao.updateQuizImage(image, quizId);
-    }
-
-    public QuizDto insertQuiz(Quiz quiz) {
-        quizDao.insert(quiz);
-        return new QuizDto(quiz);
+    public QuizDto insertQuiz(QuizDto quiz) {
+        return quizDao.insert(quiz);
     }
 
 
-    public String getCategoryNameByCategoryId(int categoryId){
+    public String getCategoryNameByCategoryId(int categoryId) {
         return quizDao.getCategoryNameByCategoryId(categoryId);
     }
+
     public boolean addTag(int quizId, int tagId) {
         return quizDao.addTagToQuiz(quizId, tagId);
     }
@@ -86,7 +89,7 @@ public class QuizService {
         return quizDao.getRecentGames(userId, limit);
     }
 
-    public List<Quiz> getQuizzesByFilter(String searchByUser, int userId) {
+    public List<QuizDto> getQuizzesByFilter(String searchByUser, int userId) {
         return quizDao.getQuizzesByFilter(searchByUser, userId);
     }
 
@@ -97,24 +100,45 @@ public class QuizService {
     public boolean unmarkQuizAsFavorite(int quizId, int userId) {
         return quizDao.unmarkQuizAsFavorite(quizId, userId);
     }
-    public List<Quiz> findRecommendations(int userId, int limit){
-        return quizDao.getRecommendations(userId,limit);
+
+    public List<Quiz> findRecommendations(int userId, int limit) {
+        return quizDao.getRecommendations(userId, limit);
     }
 
-    public List<Quiz> findRecommendationsByFriends(int userId, int limit){
-        return quizDao.getRecommendationsByFriends(userId,limit);
+    public List<Quiz> findRecommendationsByFriends(int userId, int limit) {
+        return quizDao.getRecommendationsByFriends(userId, limit);
     }
 
-    public List<Quiz> findPopularQuizzes(int limit) {
-        return  quizDao.getPopularQuizzes(limit);
+    public List<QuizDto> findPopularQuizzes(int limit) {
+        return quizDao.getPopularQuizzes(limit);
     }
 
     public List<Quiz> filterQuizzesByUserId(String userSearch, int userId, String sort) {
         return quizDao.filterQuizzesByUserId(userSearch, userId, sort);
     }
 
-    public List<Quiz> searchInFavoriteQuizzes(int userId, String userSearch) {
+    public List<QuizDto> searchInFavoriteQuizzes(int userId, String userSearch) {
         return quizDao.searchInFavoriteQuizzes(userId, userSearch);
     }
 
+    public int getNumberOfRecord() {
+        return quizDao.getNumberOfRecord();
+    }
+    public List<QuizDto> getPendingQuizByFilter(String searchText) {
+        return quizDao.getPendingQuizzesByFilter(searchText);
+    }
+
+    public void unsignQuizById(int id) { quizDao.unsignQuizById(id); }
+
+    public List<Quiz> getRejectedQuizzesByUserId(int userId, String sort) {
+        return quizDao.getRejectedQuizzesByUserId(userId, sort);
+    }
+
+    public List<RejectMessage> getRejectMessages(int quizId) {
+        return quizDao.getRejectMessages(quizId);
+    }
+
+    public void unsignAllModeratorQuizById(int moderatorId) {
+        quizDao.unsignAllQuizById(moderatorId);
+    }
 }

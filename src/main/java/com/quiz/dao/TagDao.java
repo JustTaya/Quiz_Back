@@ -9,11 +9,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.PreparedStatement;
 import java.util.List;
-import java.util.Objects;
 
 @Repository
 @RequiredArgsConstructor
@@ -82,10 +80,8 @@ public class TagDao {
         return tagsByQuiz;
     }
 
-    @Transactional
     public Tag insert(Tag entity) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
-
         try {
             jdbcTemplate.update(connection -> {
                 PreparedStatement ps = connection
@@ -98,12 +94,13 @@ public class TagDao {
             throw new DatabaseException("Database access exception while tag insert");
         }
 
+        Tag tag = new Tag();
         if (keyHolder.getKey() == null) {
-            entity.setId(getTagByName(entity.getName()).getId());
+            tag.setId(getTagByName(entity.getName()).getId());
         } else {
-            entity.setId(keyHolder.getKey().intValue());
+            tag.setId(keyHolder.getKey().intValue());
         }
 
-        return entity;
+        return tag;
     }
 }

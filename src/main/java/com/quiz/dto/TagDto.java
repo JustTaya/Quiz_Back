@@ -9,9 +9,4 @@ import lombok.NoArgsConstructor;
 public class TagDto {
     private int id;
     private String name;
-
-    public TagDto(Tag tag) {
-        this.id = tag.getId();
-        this.name = tag.getName();
-    }
 }

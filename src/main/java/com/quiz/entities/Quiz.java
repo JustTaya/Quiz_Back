@@ -8,11 +8,12 @@ import java.sql.Date;
 import java.util.List;
 
 @Data
+@NoArgsConstructor
 public class Quiz {
 
     private int id;
     private String name;
-    private byte[] image;
+    private String image;
     private int author;
     private int categoryId;
     private Date date;
@@ -22,4 +23,5 @@ public class Quiz {
     private String category;
     private boolean isFavorite;
     private List<String> tags;
+
 }

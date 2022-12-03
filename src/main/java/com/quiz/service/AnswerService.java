@@ -23,17 +23,8 @@ public class AnswerService {
         return answerDao.findAnswersByQuestionId(id);
     }
 
-    public AnswerDto insertAnswer(Answer answer) {
-        answerDao.insert(answer);
-        return new AnswerDto(answer);
-    }
-
     public byte[] getImageByAnswerId(int answerId) {
         return answerDao.getAnswerImageByAnswerId(answerId);
-    }
-
-    public boolean updateAnswer(Answer answer) {
-        return answerDao.updateAnswer(answer);
     }
 
     public boolean updateAnswerImage(MultipartFile image, int answerId) {

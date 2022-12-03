@@ -28,21 +28,8 @@ public class QuestionService {
         return questionDao.findQuestionsByQuizId(id);
     }
 
-    public QuestionDto insertQuestion(Question question) {
-        questionDao.insert(question);
-        return new QuestionDto(question);
-    }
-
     public byte[] getQuestionByQuestionId(int questionId) {
         return questionDao.getQuestionImageByQuestionId(questionId);
-    }
-
-    public boolean updateQuestion(Question question) {
-        return questionDao.updateQuestion(question);
-    }
-
-    public boolean updateImageByQuestionId(MultipartFile image, int answerId) {
-        return questionDao.updateQuestionImage(image, answerId);
     }
 
     public List<Question> getQuestionsByQuizId(int quizId) {

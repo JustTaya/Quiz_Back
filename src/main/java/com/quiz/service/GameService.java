@@ -1,13 +1,13 @@
 package com.quiz.service;
 
+import com.quiz.dao.AnnouncementDao;
 import com.quiz.dao.AnswerDao;
-import com.quiz.dao.UserDao;
 import com.quiz.dao.GameDao;
+import com.quiz.dao.UserDao;
 import com.quiz.dto.GameAnswersDto;
 import com.quiz.dto.GameQuestionsDto;
 import com.quiz.dto.GameSessionDto;
 import com.quiz.entities.*;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -24,10 +24,11 @@ public class GameService {
     private final GameDao gameDao;
     private final UserDao userDao;
     private final AnswerDao answerDao;
+    private final AnnouncementDao announcementDao;
 
     public int addGameSession(int quizId, int hostId, int questionTimer, int maxUsersNumber) {
         User host = userDao.findById(hostId);
-        
+
         GameSession gameSession = new GameSession(hostId, questionsToMap(questionService.getQuestionsByQuizId(quizId)), questionTimer);
 
         gameSession.getPlayerSet().add(new Player(host.getId(), host.getName() + " " + host.getSurname(), true));
@@ -37,8 +38,8 @@ public class GameService {
         return gameId;
     }
 
-    private int createGame(int quizId, int hostId, int questionTimer, int max_users_number) {
-        return gameDao.insertGame(quizId, hostId, questionTimer, max_users_number);
+    private int createGame(int quizId, int hostId, int questionTimer, int maxUsersNumber) {
+        return gameDao.insertGame(quizId, hostId, questionTimer, maxUsersNumber);
     }
 
     private Map<Integer, Question> questionsToMap(List<Question> questions) {
@@ -76,11 +77,18 @@ public class GameService {
 
             players.stream().filter(Player::isAuthorize)
                     .forEach(user -> userDao.insertUserScore(user.getUserId(), gameId, user.getUserScore()));
+
+
             this.currentGames.remove(gameId);
 
             GameSessionDto result = this.gameDao.getGame(gameId);
-            result.setPlayers(players.stream().sorted(Comparator.comparingInt(Player::getUserScore).reversed()).collect(Collectors.toList()));
 
+            result.setPlayers(players.stream()
+                    .sorted(Comparator.comparingInt(Player::getUserScore).reversed())
+                    .collect(Collectors.toList()));
+
+            result.getPlayers().stream().filter(Player::isAuthorize)
+                    .forEach(player -> announcementDao.generateGameResultAnnouncement(player, result.getPlayers().indexOf(player)));
             return result;
         }
         return null;
@@ -104,6 +112,7 @@ public class GameService {
                     if (isRightOption(answer.getAnswers())) {
                         this.currentGames.get(gameId).addScorePoint(2, player.getUserId(), player.isAuthorize());
                     }
+
                     break;
                 case BOOLEAN:
                     if (isRightBoolean(answer.getAnswers().get(0))) {

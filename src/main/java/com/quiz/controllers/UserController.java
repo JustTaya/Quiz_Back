@@ -1,8 +1,10 @@
 package com.quiz.controllers;
 
+import com.quiz.dto.UserDto;
 import com.quiz.entities.User;
 import com.quiz.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,5 +37,16 @@ public class UserController {
     @GetMapping("/rating")
     public ResponseEntity<List<User>> getRating(@RequestParam(value = "from") int from, @RequestParam(value = "to") int to) {
         return ResponseEntity.ok(userService.getRating(from, to));
+    }
+
+    @PostMapping("/addAdminUser")
+    public ResponseEntity<UserDto> addAdminUser(@RequestBody User user){
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(userService.addAdminUser(user));
+    }
+
+    @GetMapping("/activate/{code}")
+    public ResponseEntity<User> getByPassword(@PathVariable String code) {
+        return ResponseEntity.ok(userService.findByPassword(code));
     }
 }

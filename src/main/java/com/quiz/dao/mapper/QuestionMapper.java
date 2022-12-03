@@ -17,6 +17,7 @@ public class QuestionMapper implements RowMapper<Question> {
     public static final String QUESTION_TEXT = "text";
     public static final String QUESTION_ACTIVE = "active";
     public static final String QUESTION_LANGUAGE_ID = "language_id";
+    public static final String QUESTION_IMAGE = "image";
 
     @Override
     public Question mapRow(ResultSet resultSet, int rowNum) throws SQLException {
@@ -25,6 +26,7 @@ public class QuestionMapper implements RowMapper<Question> {
         question.setId(resultSet.getInt(QUESTION_ID));
         question.setQuizId(resultSet.getInt(QUESTION_QUIZ_ID));
         question.setType(QuestionType.valueOf(resultSet.getString(QUESTION_TYPE)));
+        question.setImage(resultSet.getString(QUESTION_IMAGE));
         question.setText(resultSet.getString(QUESTION_TEXT));
         question.setActive(resultSet.getBoolean(QUESTION_ACTIVE));
         question.setLanguageId(resultSet.getInt(QUESTION_LANGUAGE_ID));

@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -29,5 +30,16 @@ public class AuthController {
     @ResponseBody
     public ResponseToken login(@RequestBody User user) {
         return new ResponseToken(authService.login(user), String.valueOf(userService.getUserIdByEmail(user.getEmail())), user.getEmail(), String.valueOf(userService.getUserRoleByEmail(user.getEmail())));
+    }
+
+
+    @GetMapping("/activate/{code}")
+    public String activate (@PathVariable  String code) {
+        boolean isActivated = userService.activateUser(code);
+        if (isActivated) {
+            return "Activation successfully";
+        } else {
+            return "Activation failed";
+        }
     }
 }

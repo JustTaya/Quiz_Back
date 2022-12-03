@@ -1,20 +1,19 @@
 package com.quiz.controllers;
 
 
+import com.quiz.dto.QuizCheckDto;
 import com.quiz.dto.QuizDto;
-import com.quiz.entities.Quiz;
-import com.quiz.entities.ResponsePaginatedList;
-import com.quiz.entities.ResponseText;
-import com.quiz.entities.StatusType;
+import com.quiz.dto.ModeratorCommentDto;
+import com.quiz.entities.*;
 import com.quiz.service.PaginationService;
+import com.quiz.entities.StatusType;
+import com.quiz.service.QuizCheckService;
 import com.quiz.service.QuizService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Base64;
 import java.util.List;
 
 @RestController
@@ -25,22 +24,34 @@ public class SharingQuizController {
 
     private final QuizService quizService;
     private final PaginationService paginationService;
+    private final QuizCheckService quizCheckService;
+
+    @GetMapping("/quizCheck/{quizId}")
+    public ResponseEntity<QuizCheckDto> getQuizCheck(@PathVariable int quizId) {
+        return ResponseEntity.ok(quizCheckService.getQuizCheck(quizId));
+    }
+
 
     @GetMapping("/{quizId}")
-    public ResponseEntity<QuizDto> getQuiz(@PathVariable int quizId) {
+    public ResponseEntity<Quiz> getQuiz(@PathVariable int quizId) {
         return ResponseEntity.ok(quizService.findQuizById(quizId));
     }
 
+    @GetMapping("/info/{quizId}")
+    public ResponseEntity<QuizDto> getQuizInfo(@PathVariable int quizId) {
+        return ResponseEntity.ok(quizService.getQuizInfo(quizId));
+    }
+
     @GetMapping("/{pageSize}/{pageNumber}/{userId}")
-    public ResponseEntity<ResponsePaginatedList<Quiz>> getAllQuizzes(@PathVariable int pageSize, @PathVariable int pageNumber, @PathVariable int userId) {
-        List<Quiz> quizzes = quizService.findAllQuizzes(userId);
-        return ResponseEntity.ok(new ResponsePaginatedList<>(paginationService.paginate(quizzes, pageSize, pageNumber), quizzes.size()));
+    public ResponseEntity<ResponcePaginatedList<QuizDto>> getAllQuizzes(@PathVariable int pageSize, @PathVariable int pageNumber, @PathVariable int userId) {
+        List<QuizDto> quizzes = quizService.findAllQuizzes(pageSize, pageNumber, userId);
+        return ResponseEntity.ok(new ResponcePaginatedList<>(quizzes, quizService.getNumberOfRecord()));
     }
 
     @GetMapping("/categories/{categoryId}/{pageSize}/{pageNumber}/{userId}")
-    public ResponseEntity<ResponsePaginatedList<Quiz>> getQuizzesByCategory(@PathVariable int categoryId, @PathVariable int pageSize, @PathVariable int pageNumber, @PathVariable int userId) {
-        List<Quiz> quizzes = quizService.findQuizzesByCategory(categoryId, userId);
-        return ResponseEntity.ok(new ResponsePaginatedList<>(paginationService.paginate(quizzes, pageSize, pageNumber), quizzes.size()));
+    public ResponseEntity<ResponcePaginatedList<QuizDto>> getQuizzesByCategory(@PathVariable int categoryId, @PathVariable int pageSize, @PathVariable int pageNumber, @PathVariable int userId) {
+        List<QuizDto> quizzes = quizService.findQuizzesByCategory(categoryId, userId);
+        return ResponseEntity.ok(new ResponcePaginatedList<>(paginationService.paginate(quizzes, pageSize, pageNumber), quizzes.size()));
     }
 
     @GetMapping("/tags/{tagId}")
@@ -53,42 +64,15 @@ public class SharingQuizController {
         return ResponseEntity.ok(quizService.findQuizzesByName(name));
     }
 
-    @PostMapping("/update_quiz")
-    public ResponseEntity<Quiz> updateQuizInfo(@RequestBody Quiz quiz) {
-
-        boolean isRecordAffected = quizService.updateQuiz(quiz);
-
-        if (isRecordAffected) {
-            return ResponseEntity.status(HttpStatus.CREATED).build();
-        }
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-    }
-
     @PostMapping("/new_quiz")
-    public ResponseEntity<QuizDto> insert(@RequestBody Quiz quiz) {
+    public ResponseEntity<QuizDto> insert(@RequestBody QuizDto quiz) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(quizService.insertQuiz(quiz));
     }
 
     @GetMapping("/get_image/{quizId}")
     public ResponseEntity<ResponseText> getQuizImage(@PathVariable int quizId) {
-        return ResponseEntity.ok(new ResponseText(new String(Base64.getEncoder().encode(quizService.getImageByQuizId(quizId)))));
-    }
-
-    @PostMapping("/new_image/{quizId}")
-    public ResponseEntity<String> changeQuizImage(@RequestParam(value = "image") MultipartFile image, @PathVariable int quizId) {
-        boolean isRecordAffected = quizService.updateQuizImage(image, quizId);
-        if (isRecordAffected) {
-            return ResponseEntity.status(HttpStatus.CREATED).build();
-        }
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-    }
-
-
-    @PostMapping("/add_tag")
-    public ResponseEntity<String> addTagToQuiz(@RequestParam(value = "quizId") int quizId, @RequestParam(value = "tagId") int tagId) {
-        boolean isRecordAffected = quizService.addTag(quizId, tagId);
-        return ResponseEntity.status(isRecordAffected ? HttpStatus.CREATED : HttpStatus.INTERNAL_SERVER_ERROR).build();
+        return ResponseEntity.ok(new ResponseText(quizService.getImageByQuizId(quizId)));
     }
 
     @GetMapping("/top_quizzes")
@@ -107,13 +91,13 @@ public class SharingQuizController {
     }
 
     @GetMapping("/filter/{searchByUser}/{pageSize}/{pageNumber}/{userId}")
-    public ResponseEntity<ResponsePaginatedList<Quiz>> getFilteredQuizzes(@PathVariable String searchByUser, @PathVariable int pageSize, @PathVariable int pageNumber, @PathVariable int userId){
-        List<Quiz> quizzes = quizService.getQuizzesByFilter(searchByUser, userId);
-        return ResponseEntity.ok(new ResponsePaginatedList<Quiz>(paginationService.paginate(quizzes, pageSize, pageNumber), quizzes.size()));
+    public ResponseEntity<ResponcePaginatedList<QuizDto>> getFilteredQuizzes(@PathVariable String searchByUser, @PathVariable int pageSize, @PathVariable int pageNumber, @PathVariable int userId) {
+        List<QuizDto> quizzes = quizService.getQuizzesByFilter(searchByUser, userId);
+        return ResponseEntity.ok(new ResponcePaginatedList<>(paginationService.paginate(quizzes, pageSize, pageNumber), quizzes.size()));
     }
 
     @PostMapping("/mark/{quizId}/{userId}")
-    public ResponseEntity<String> markQuizAsFavorite (@PathVariable int quizId, @PathVariable int userId){
+    public ResponseEntity<String> markQuizAsFavorite(@PathVariable int quizId, @PathVariable int userId) {
         boolean isRecordAffected = quizService.markQuizAsFavorite(quizId, userId);
         if (isRecordAffected) {
             return ResponseEntity.status(HttpStatus.CREATED).build();
@@ -122,7 +106,7 @@ public class SharingQuizController {
     }
 
     @PostMapping("/unmark/{quizId}/{userId}")
-    public ResponseEntity<String> unmarkQuizAsFavorite (@PathVariable int quizId, @PathVariable int userId){
+    public ResponseEntity<String> unmarkQuizAsFavorite(@PathVariable int quizId, @PathVariable int userId) {
         boolean isRecordAffected = quizService.unmarkQuizAsFavorite(quizId, userId);
         if (isRecordAffected) {
             return ResponseEntity.status(HttpStatus.CREATED).build();
@@ -141,12 +125,73 @@ public class SharingQuizController {
     }
 
     @GetMapping("/popular/{limit}")
-    public ResponseEntity<List<Quiz>> getPopularQuizzes(@PathVariable int limit) {
+    public ResponseEntity<List<QuizDto>> getPopularQuizzes(@PathVariable int limit) {
         return ResponseEntity.ok(quizService.findPopularQuizzes(limit));
     }
 
     @GetMapping("/status/{status}")
-    public ResponseEntity<List<QuizDto>> getQuizzesByStatus(@PathVariable StatusType status){
+    public ResponseEntity<List<QuizDto>> getQuizzesByStatus(@PathVariable StatusType status) {
         return ResponseEntity.ok(quizService.findQuizzesByStatus(status));
+    }
+
+    @GetMapping("/status/{status}/{pageSize}/{pageNumber}")
+    public ResponseEntity<ResponcePaginatedList<QuizDto>> getQuizzesByStatus(@PathVariable int pageSize, @PathVariable int pageNumber, @PathVariable StatusType status) {
+        List<QuizDto> quizzes = quizService.findQuizzesByStatus(status);
+        return ResponseEntity.ok(new ResponcePaginatedList<>(paginationService.paginate(quizzes, pageSize, pageNumber), quizzes.size()));
+    }
+
+    @PostMapping("update/status/{quizId}")
+    public ResponseEntity<String> updateStatus(@RequestBody StatusType status, @PathVariable int quizId){
+        boolean isRecordAffected = quizCheckService.updateStatusById(quizId, status);
+
+        if (isRecordAffected){
+            return ResponseEntity.status(HttpStatus.CREATED).build();
+        }
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    }
+    @PostMapping("assignment/{quizId}")
+    public ResponseEntity<String> assignModerator(@RequestBody String moderatorId, @PathVariable int quizId){
+        boolean isRecordAffected = quizCheckService.assignModerator(quizId, Integer.parseInt(moderatorId));
+
+        if (isRecordAffected){
+            return ResponseEntity.status(HttpStatus.CREATED).build();
+        }
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    }
+
+    @PostMapping("/addComment")
+    public ResponseEntity<ModeratorComment> addComment(@RequestBody ModeratorComment comment){
+        quizCheckService.updateStatusById(comment.getQuizId(),StatusType.DEACTIVATED);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(quizCheckService.addCommentByQuizId(comment));
+    }
+
+    @GetMapping("/moderatorQuizzes/{moderatorId}/{pageSize}/{pageNumber}")
+    public ResponseEntity<ResponcePaginatedList<QuizDto>> getModeratorQuizzes(@PathVariable int moderatorId, @PathVariable int pageSize, @PathVariable int pageNumber){
+        List<QuizDto> quizzes = quizService.getModeratorQuizzes(moderatorId);
+        return ResponseEntity.ok(new ResponcePaginatedList<QuizDto>(paginationService.paginate(quizzes, pageSize, pageNumber), quizzes.size()));
+    }
+
+
+
+    @GetMapping("/filter/{searchText}/{pageSize}/{pageNumber}")
+    public ResponseEntity<ResponcePaginatedList<QuizDto>> getFilteredPendingQuizzes(@PathVariable String searchText, @PathVariable int pageSize, @PathVariable int pageNumber){
+        List<QuizDto> quizzes =  quizService.getPendingQuizByFilter(searchText);
+        return ResponseEntity.ok(new ResponcePaginatedList<QuizDto>(paginationService.paginate(quizzes, pageSize, pageNumber), quizzes.size()));
+    }
+
+    @DeleteMapping("/unsign/{quizId}")
+    void unsignQuizById(@PathVariable int quizId) {
+        quizService.unsignQuizById(quizId);
+    }
+
+    @DeleteMapping("/unsignAll/{moderatorId}")
+    void unsignAllModeratorQuizById(@PathVariable int moderatorId) {
+        quizService.unsignAllModeratorQuizById(moderatorId);
+    }
+
+    @GetMapping("comments/{quizId}")
+    public ResponseEntity<List<ModeratorCommentDto>> getCommentHistory(@PathVariable int quizId){
+        return ResponseEntity.ok(quizCheckService.getCommentHistory(quizId));
     }
 }

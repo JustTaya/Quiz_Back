@@ -2,6 +2,7 @@ package com.quiz.service;
 
 import com.quiz.dao.UserDao;
 import com.quiz.dto.UserDto;
+import com.quiz.entities.Role;
 import com.quiz.entities.User;
 import com.quiz.exceptions.EmailExistException;
 import com.quiz.exceptions.NotFoundException;
@@ -26,7 +27,7 @@ public class AuthService {
             throw new EmailExistException("User with this email already exist");
         }
         user.setPassword(user.getPassword());
-        user.setRole(user.getRole());
+        user.setRole((Role.USER));
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userDao.insert(user);
         return new UserDto(user);

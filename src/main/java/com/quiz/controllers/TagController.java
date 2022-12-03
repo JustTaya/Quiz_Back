@@ -1,10 +1,8 @@
 package com.quiz.controllers;
 
-import com.quiz.dto.TagDto;
 import com.quiz.entities.Tag;
 import com.quiz.service.TagService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,11 +34,5 @@ public class TagController {
     @GetMapping("/quiz/{quizId}")
     public ResponseEntity<List<Tag>> getTagsByQuiz(@PathVariable int quizId) {
         return ResponseEntity.ok(tagService.findTagsByQuiz(quizId));
-    }
-
-    @PostMapping("/new")
-    public ResponseEntity<TagDto> insert(@RequestBody Tag tag) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(tagService.insertTag(tag));
     }
 }

@@ -32,25 +32,6 @@ public class AnswerController {
         return ResponseEntity.ok(answerService.findAnswersByQuestionId(questionId));
     }
 
-    @PostMapping("/new")
-    public ResponseEntity<AnswerDto> insert(@RequestBody Answer answer) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(answerService.insertAnswer(answer));
-    }
-
-    @PostMapping("/update")
-    public ResponseEntity<String> update(@RequestBody Answer answer) {
-        boolean isRecordAffected = answerService.updateAnswer(answer);
-
-        if (isRecordAffected) {
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .build();
-        }
-
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .build();
-    }
-
     @GetMapping("/get_image/{answerId}")
     public ResponseEntity<ResponseText> getAnswerImage(@PathVariable int answerId) {
         return ResponseEntity.ok(new ResponseText(new String(Base64.getEncoder().encode(answerService.getImageByAnswerId(answerId)))));

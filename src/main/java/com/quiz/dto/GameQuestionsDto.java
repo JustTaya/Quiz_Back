@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class GameQuestionsDto {
-    private int questionNumber;
-    private int questionTimer;
-    private Question question;
+    int questionNumber;
+    int questionTimer;
+    Question question;
 }

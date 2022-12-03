@@ -13,6 +13,7 @@ public class AnswerMapper implements RowMapper<Answer> {
     public static final String ANSWER_ID = "id";
     public static final String ANSWER_QUESTION_ID = "question_id";
     public static final String ANSWER_TEXT = "text";
+    public static final String ANSWER_IMAGE = "image";
     public static final String ANSWER_CORRECT = "correct";
     public static final String ANSWER_NEXT_ANSWER_ID = "next_answer_id";
 
@@ -23,6 +24,7 @@ public class AnswerMapper implements RowMapper<Answer> {
         answer.setId(resultSet.getInt(ANSWER_ID));
         answer.setQuestionId(resultSet.getInt(ANSWER_QUESTION_ID));
         answer.setText(resultSet.getString(ANSWER_TEXT));
+        answer.setImage(resultSet.getString(ANSWER_IMAGE));
         answer.setCorrect(resultSet.getBoolean(ANSWER_CORRECT));
         answer.setNextAnswerId(resultSet.getInt(ANSWER_NEXT_ANSWER_ID));
 
